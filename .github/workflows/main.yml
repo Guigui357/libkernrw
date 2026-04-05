@@ -1,0 +1,33 @@
+name: Build libkernrw
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:   # permite execução manual
+
+jobs:
+  build:
+    runs-on: macos-latest   # ou ubuntu-latest, mas para toolchain iOS é melhor macOS
+
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v4
+
+      - name: Instalar dependências (Theos, ldid, etc.)
+        run: |
+          # Instala Theos (se o Makefile precisar)
+          git clone --depth 1 https://github.com/theos/theos.git $HOME/theos
+          echo "THEOS=$HOME/theos" >> $GITHUB_ENV
+          # Instala ldid para assinatura
+          brew install ldid
+
+      - name: Executar make
+        run: make
+
+      - name: Upload artefato (libkernrw.0.dylib)
+        uses: actions/upload-artifact@v4
+        with:
+          name: libkernrw
+          path: bin/libkernrw.0.dylib
